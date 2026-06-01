@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
 } from "recharts";
-import { listarDiablos, patchDiablo, activarTodos, fetchRanking } from "../../api.js";
+import {
+  listarDiablos, patchDiablo, activarTodos, fetchRanking, borrarDiablo,
+} from "../../api.js";
 
 // Panel Dev: estado de los 100 diablos + resultados/graficas (SOLO aqui, nunca
 // en el modo publico). Permite abrir la votacion y revisar el ranking Wilson.
@@ -31,6 +33,13 @@ export default function Admin() {
 
   async function cambiarEstado(id, estado) {
     await patchDiablo(id, { estado });
+    recargar();
+  }
+
+  async function eliminar(id) {
+    if (!confirm(`¿Eliminar el diablo ${String(id).padStart(3, "0")}? El ID quedará libre para reasignarlo.`))
+      return;
+    await borrarDiablo(id);
     recargar();
   }
 
@@ -97,41 +106,52 @@ export default function Admin() {
       <div className="card">
         <div className="row" style={{ justifyContent: "space-between" }}>
           <h3 style={{ margin: 0 }}>Diablos</h3>
-          <button onClick={() => setVista(vista === "detalle" ? "galeria" : "detalle")}>
-            {vista === "detalle" ? "🖼️ Ver galería" : "📋 Ver detalle"}
-          </button>
+          <button onClick={() => setVista("galeria")}>🖼️ Ver galería</button>
         </div>
 
-        {vista === "galeria" ? (
+        <div className="grid">
+          {diablos.map((d) => (
+            <div className="tile" key={d.id}>
+              <img src={d.imagen_svg_url} alt={`Diablo ${d.id}`} />
+              <div className="meta">
+                <strong>{String(d.id).padStart(3, "0")}</strong>
+                {d.nombre ? ` · ${d.nombre}` : ""}
+                <br />
+                <span className={`badge ${d.estado}`}>{d.estado}</span>
+                <br />
+                👿{d.votos_positivos} 💀{d.votos_negativos}
+                <br />
+                {d.estado !== "activo" ? (
+                  <button onClick={() => cambiarEstado(d.id, "activo")}>activar</button>
+                ) : (
+                  <button onClick={() => cambiarEstado(d.id, "archivado")}>archivar</button>
+                )}{" "}
+                <button onClick={() => eliminar(d.id)} title="Eliminar">
+                  🗑️
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Galería a pantalla completa */}
+      {vista === "galeria" && (
+        <div className="gallery-full">
+          <button
+            className="gallery-close"
+            onClick={() => setVista("detalle")}
+            aria-label="Cerrar galería"
+          >
+            ✕
+          </button>
           <div className="gallery">
             {diablos.map((d) => (
               <img key={d.id} src={d.imagen_svg_url} alt={`Diablo ${d.id}`} />
             ))}
           </div>
-        ) : (
-          <div className="grid">
-            {diablos.map((d) => (
-              <div className="tile" key={d.id}>
-                <img src={d.imagen_svg_url} alt={`Diablo ${d.id}`} />
-                <div className="meta">
-                  <strong>{String(d.id).padStart(3, "0")}</strong>
-                  {d.nombre ? ` · ${d.nombre}` : ""}
-                  <br />
-                  <span className={`badge ${d.estado}`}>{d.estado}</span>
-                  <br />
-                  👿{d.votos_positivos} 💀{d.votos_negativos}
-                  <br />
-                  {d.estado !== "activo" ? (
-                    <button onClick={() => cambiarEstado(d.id, "activo")}>activar</button>
-                  ) : (
-                    <button onClick={() => cambiarEstado(d.id, "archivado")}>archivar</button>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

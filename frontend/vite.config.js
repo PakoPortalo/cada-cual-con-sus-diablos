@@ -3,5 +3,6 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
-  server: { port: 5173 },
+  // host: true expone el dev server en la red local (para acceder desde el móvil)
+  server: { host: true, port: 5173 },
 });

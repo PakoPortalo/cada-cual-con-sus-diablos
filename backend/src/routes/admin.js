@@ -1,6 +1,6 @@
 import { Router } from "express";
 import multer from "multer";
-import { supabase, uploadToBucket } from "../db/supabase.js";
+import { supabase, uploadToBucket, BUCKET } from "../db/supabase.js";
 import { requireAuth } from "../lib/requireAuth.js";
 import { vectorizePostit } from "../pipeline/index.js";
 
@@ -107,6 +107,17 @@ adminRouter.post("/activar-todos", async (_req, res) => {
     .select("id");
   if (error) return res.status(500).json({ error: error.message });
   res.json({ activados: data.length });
+});
+
+// Borra un diablo: fila en DB (los votos caen por ON DELETE CASCADE) y sus
+// archivos en Storage. El ID queda LIBRE para reasignarlo a otro post-it.
+adminRouter.delete("/diablos/:id", async (req, res) => {
+  const id = Number(req.params.id);
+  const pad = String(id).padStart(3, "0");
+  await supabase.storage.from(BUCKET).remove([`originales/${pad}.jpg`, `svg/${pad}.svg`]);
+  const { error } = await supabase.from("diablos").delete().eq("id", id);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ ok: true, liberado: id });
 });
 
 // Ranking + datos para graficas (solo Dev). Ordena por Wilson score.

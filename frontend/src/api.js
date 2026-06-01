@@ -101,6 +101,15 @@ export async function patchDiablo(id, patch) {
   return r.json();
 }
 
+export async function borrarDiablo(id) {
+  const r = await fetch(`${API}/admin/diablos/${id}`, {
+    method: "DELETE",
+    headers: await authHeaders(),
+  });
+  if (!r.ok) throw new Error((await r.json()).error || "Error");
+  return r.json();
+}
+
 export async function activarTodos() {
   const r = await fetch(`${API}/admin/activar-todos`, {
     method: "POST",
