@@ -56,6 +56,26 @@ a { color: var(--rojo); }
 .previews figure { margin: 0; text-align: center; }
 .previews img { width: 150px; height: 150px; object-fit: contain; background: var(--crema); border: 1px solid #ccc; border-radius: 8px; }
 .previews figcaption { font-size: 0.8rem; opacity: 0.7; }
+
+/* Comparacion grande foto vs vectorizacion */
+.cmp { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+.cmp figure { margin: 0; text-align: center; flex: 1 1 320px; max-width: 460px; }
+.cmp img {
+  width: 100%; aspect-ratio: 1; object-fit: contain;
+  background: var(--crema); border: 2px solid var(--negro); border-radius: 12px;
+}
+/* Caja del SVG en vivo (vectorizacion nitida) */
+.cmp .svgbox {
+  width: 100%; aspect-ratio: 1;
+  background: var(--crema); border: 2px solid var(--negro); border-radius: 12px;
+  display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.cmp .svgbox svg { width: 100%; height: 100%; }
+.cmp figcaption { font-size: 0.85rem; opacity: 0.7; margin-top: 0.25rem; }
+.cmp .loading { outline: 3px dashed var(--rojo); outline-offset: -6px; }
+.masks { margin-top: 0.75rem; }
+.masks summary { cursor: pointer; font-weight: 600; }
+.masks .previews { margin-top: 0.5rem; }
 label.slider { display: block; margin: 0.5rem 0; }
 label.slider span { display: inline-block; min-width: 220px; }
 input[type="range"] { width: 100%; }
@@ -66,6 +86,15 @@ input[type="text"], input[type="number"], input[type="email"], input[type="passw
 .grid .tile { background: #fff; border: 2px solid var(--negro); border-radius: 10px; padding: 0.4rem; text-align: center; }
 .grid .tile img { width: 100%; aspect-ratio: 1; object-fit: contain; background: var(--crema); }
 .grid .tile .meta { font-size: 0.75rem; }
+/* Galeria limpia: solo las vectorizaciones */
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+.gallery img { width: 100%; aspect-ratio: 1; object-fit: contain; }
+
 .badge { display: inline-block; font-size: 0.7rem; padding: 0.1rem 0.4rem; border-radius: 6px; border: 1px solid var(--negro); }
 .badge.pendiente { background: var(--amarillo); }
 .badge.activo { background: #7fd18a; }

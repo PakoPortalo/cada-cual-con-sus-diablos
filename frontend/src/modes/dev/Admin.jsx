@@ -11,6 +11,7 @@ export default function Admin() {
   const [ranking, setRanking] = useState([]);
   const [votosTotales, setVotosTotales] = useState(0);
   const [error, setError] = useState("");
+  const [vista, setVista] = useState("detalle"); // detalle | galeria
 
   async function recargar() {
     try {
@@ -94,28 +95,42 @@ export default function Admin() {
       )}
 
       <div className="card">
-        <h3>Diablos</h3>
-        <div className="grid">
-          {diablos.map((d) => (
-            <div className="tile" key={d.id}>
-              <img src={d.imagen_svg_url} alt={`Diablo ${d.id}`} />
-              <div className="meta">
-                <strong>{String(d.id).padStart(3, "0")}</strong>
-                {d.nombre ? ` · ${d.nombre}` : ""}
-                <br />
-                <span className={`badge ${d.estado}`}>{d.estado}</span>
-                <br />
-                👿{d.votos_positivos} 💀{d.votos_negativos}
-                <br />
-                {d.estado !== "activo" ? (
-                  <button onClick={() => cambiarEstado(d.id, "activo")}>activar</button>
-                ) : (
-                  <button onClick={() => cambiarEstado(d.id, "archivado")}>archivar</button>
-                )}
-              </div>
-            </div>
-          ))}
+        <div className="row" style={{ justifyContent: "space-between" }}>
+          <h3 style={{ margin: 0 }}>Diablos</h3>
+          <button onClick={() => setVista(vista === "detalle" ? "galeria" : "detalle")}>
+            {vista === "detalle" ? "🖼️ Ver galería" : "📋 Ver detalle"}
+          </button>
         </div>
+
+        {vista === "galeria" ? (
+          <div className="gallery">
+            {diablos.map((d) => (
+              <img key={d.id} src={d.imagen_svg_url} alt={`Diablo ${d.id}`} />
+            ))}
+          </div>
+        ) : (
+          <div className="grid">
+            {diablos.map((d) => (
+              <div className="tile" key={d.id}>
+                <img src={d.imagen_svg_url} alt={`Diablo ${d.id}`} />
+                <div className="meta">
+                  <strong>{String(d.id).padStart(3, "0")}</strong>
+                  {d.nombre ? ` · ${d.nombre}` : ""}
+                  <br />
+                  <span className={`badge ${d.estado}`}>{d.estado}</span>
+                  <br />
+                  👿{d.votos_positivos} 💀{d.votos_negativos}
+                  <br />
+                  {d.estado !== "activo" ? (
+                    <button onClick={() => cambiarEstado(d.id, "activo")}>activar</button>
+                  ) : (
+                    <button onClick={() => cambiarEstado(d.id, "archivado")}>archivar</button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

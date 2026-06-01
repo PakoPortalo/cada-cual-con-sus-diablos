@@ -17,9 +17,14 @@ export default function Capture() {
   const [thresholds, setThresholds] = useState(DEFAULTS);
   const [id, setId] = useState("");
   const [nombre, setNombre] = useState("");
-  const [estado, setEstado] = useState("idle"); // idle|procesando|listo|guardando|error
+  const [procesando, setProcesando] = useState(false);
+  const [procError, setProcError] = useState("");
+  const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState("");
   const [sugerido, setSugerido] = useState(null);
+
+  // Control de carrera: solo la última petición lanzada es válida.
+  const seqRef = useRef(0);
 
   // Sugerir el primer ID 1–100 libre.
   useEffect(() => {
@@ -36,65 +41,70 @@ export default function Capture() {
       .catch(() => {});
   }, []);
 
-  async function procesar(f, th) {
-    setEstado("procesando");
-    setError("");
-    try {
-      const r = await previewDiablo(f, th);
-      setRes({
-        svg: r.svg,
-        preview: `data:image/png;base64,${r.preview_png_base64}`,
-        maskForma: `data:image/png;base64,${r.mask_forma_base64}`,
-        maskDetalle: `data:image/png;base64,${r.mask_detalle_base64}`,
-      });
-      setEstado("listo");
-    } catch (e) {
-      setError(e.message);
-      setEstado("error");
-    }
-  }
+  // Reprocesa cuando cambian foto o umbrales, con debounce y anti-carrera.
+  // Un error NO borra la última vista buena ni bloquea futuros intentos.
+  useEffect(() => {
+    if (!file) return;
+    const t = setTimeout(async () => {
+      const mine = ++seqRef.current;
+      setProcesando(true);
+      setProcError("");
+      try {
+        const r = await previewDiablo(file, thresholds);
+        if (mine !== seqRef.current) return; // llegó tarde: ignorar
+        setRes({
+          svg: r.svg,
+          preview: `data:image/png;base64,${r.preview_png_base64}`,
+          maskForma: `data:image/png;base64,${r.mask_forma_base64}`,
+          maskDetalle: `data:image/png;base64,${r.mask_detalle_base64}`,
+        });
+      } catch (e) {
+        if (mine === seqRef.current) setProcError(e.message);
+      } finally {
+        if (mine === seqRef.current) setProcesando(false);
+      }
+    }, 350);
+    return () => clearTimeout(t);
+  }, [file, thresholds]);
 
   function onFoto(e) {
     const f = e.target.files?.[0];
     if (!f) return;
-    setFile(f);
-    setFotoUrl(URL.createObjectURL(f));
+    setRes(null);
     setThresholds(DEFAULTS);
-    procesar(f, DEFAULTS);
+    setFotoUrl(URL.createObjectURL(f));
+    setFile(f); // dispara el useEffect
   }
 
-  // Reaplica umbrales (con debounce) al mover sliders.
-  function onThreshold(key, value) {
-    const th = { ...thresholds, [key]: Number(value) };
-    setThresholds(th);
-    clearTimeout(onThreshold._t);
-    onThreshold._t = setTimeout(() => file && procesar(file, th), 250);
+  function setTh(key, value) {
+    setThresholds((th) => ({ ...th, [key]: Number(value) }));
   }
 
   function repetir() {
+    seqRef.current++; // invalida lo en vuelo
     setFile(null);
     setRes(null);
     setFotoUrl(null);
-    setEstado("idle");
+    setProcError("");
     fileRef.current?.click();
   }
 
   async function guardar() {
     if (!file || !id) return;
-    setEstado("guardando");
+    setGuardando(true);
     setError("");
     try {
       await guardarDiablo(file, { id: Number(id), nombre, thresholds });
-      // preparar el siguiente
+      seqRef.current++;
       setFile(null);
       setRes(null);
       setFotoUrl(null);
       setNombre("");
       setId(String(Number(id) + 1));
-      setEstado("idle");
     } catch (e) {
       setError(e.message);
-      setEstado("error");
+    } finally {
+      setGuardando(false);
     }
   }
 
@@ -142,24 +152,39 @@ export default function Capture() {
             </label>
           </div>
 
-          <div className="previews">
+          {/* Vista grande: foto vs vectorización */}
+          <div className="cmp">
             <figure>
               <img src={fotoUrl} alt="foto" />
               <figcaption>Foto</figcaption>
             </figure>
             <figure>
-              <img src={res?.preview} alt="vector" />
-              <figcaption>Vectorización {estado === "procesando" && "…"}</figcaption>
-            </figure>
-            <figure>
-              <img src={res?.maskForma} alt="forma" />
-              <figcaption>Capa roja (forma)</figcaption>
-            </figure>
-            <figure>
-              <img src={res?.maskDetalle} alt="detalle" />
-              <figcaption>Capa negra (detalle)</figcaption>
+              {/* SVG en vivo: vectorial, nítido a cualquier tamaño */}
+              <div
+                className={`svgbox ${procesando ? "loading" : ""}`}
+                dangerouslySetInnerHTML={res ? { __html: res.svg } : undefined}
+              />
+              <figcaption>
+                Vectorización {procesando && "· actualizando…"}
+              </figcaption>
             </figure>
           </div>
+          {procError && <p className="err">No se pudo vectorizar: {procError}</p>}
+
+          {/* Máscaras como detalle plegable */}
+          <details className="masks">
+            <summary>Ver capas (forma / detalle)</summary>
+            <div className="previews">
+              <figure>
+                <img src={res?.maskForma} alt="forma" />
+                <figcaption>Capa roja (forma)</figcaption>
+              </figure>
+              <figure>
+                <img src={res?.maskDetalle} alt="detalle" />
+                <figcaption>Capa negra (detalle)</figcaption>
+              </figure>
+            </div>
+          </details>
 
           <fieldset style={{ border: "none", padding: 0, marginTop: "0.5rem" }}>
             <label className="slider">
@@ -169,7 +194,7 @@ export default function Capture() {
                 min="40"
                 max="160"
                 value={thresholds.blackMax}
-                onChange={(e) => onThreshold("blackMax", e.target.value)}
+                onChange={(e) => setTh("blackMax", e.target.value)}
               />
             </label>
             <label className="slider">
@@ -179,7 +204,7 @@ export default function Capture() {
                 min="60"
                 max="200"
                 value={thresholds.redMinR}
-                onChange={(e) => onThreshold("redMinR", e.target.value)}
+                onChange={(e) => setTh("redMinR", e.target.value)}
               />
             </label>
             <label className="slider">
@@ -189,21 +214,24 @@ export default function Capture() {
                 min="5"
                 max="100"
                 value={thresholds.redDelta}
-                onChange={(e) => onThreshold("redDelta", e.target.value)}
+                onChange={(e) => setTh("redDelta", e.target.value)}
               />
             </label>
+            <button onClick={() => setThresholds(DEFAULTS)} style={{ marginTop: "0.5rem" }}>
+              Restablecer umbrales
+            </button>
           </fieldset>
 
-          <div className="row">
-            <button onClick={repetir} disabled={estado === "guardando"}>
+          <div className="row" style={{ marginTop: "0.5rem" }}>
+            <button onClick={repetir} disabled={guardando}>
               ↺ Repetir
             </button>
             <button
               className="btn-primary"
               onClick={guardar}
-              disabled={estado === "guardando" || estado === "procesando" || !id}
+              disabled={guardando || procesando || !id || !res}
             >
-              {estado === "guardando" ? "Guardando…" : "💾 Guardar"}
+              {guardando ? "Guardando…" : "💾 Guardar"}
             </button>
           </div>
         </div>
