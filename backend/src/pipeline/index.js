@@ -1,4 +1,5 @@
 import sharp from "sharp";
+import { normalizeImage } from "./normalize.js";
 import { detectBorder } from "./detectBorder.js";
 import { separateColors } from "./separateColors.js";
 import { tracePath } from "./vectorize.js";
@@ -15,7 +16,8 @@ import { POTRACE } from "./config.js";
 // opts: { crop } para recorte manual; { thresholds } para ajustar por foto
 // cuanta tinta se queda en cada capa (blackMax / redMinR / redDelta).
 export async function vectorizePostit(inputBuffer, opts = {}) {
-  const cropped = await detectBorder(inputBuffer, opts);
+  const normalized = await normalizeImage(inputBuffer); // HEIC -> JPEG si hace falta
+  const cropped = await detectBorder(normalized, opts);
   const { forma, detalle, width } = await separateColors(cropped, opts.thresholds);
 
   const [formaD, detalleD] = await Promise.all([
@@ -26,5 +28,6 @@ export async function vectorizePostit(inputBuffer, opts = {}) {
   const svg = buildSvg(formaD, detalleD, width);
   const previewPng = await sharp(Buffer.from(svg)).png().toBuffer();
 
-  return { svg, previewPng, cropped, masks: { forma, detalle } };
+  // `original` = imagen lista para navegador (JPEG), ya convertida si era HEIC.
+  return { svg, previewPng, original: normalized, cropped, masks: { forma, detalle } };
 }

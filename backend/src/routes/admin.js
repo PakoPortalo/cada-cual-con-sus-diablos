@@ -45,11 +45,12 @@ adminRouter.post("/diablos", upload.single("foto"), async (req, res) => {
   try {
     const crop = req.body.crop ? JSON.parse(req.body.crop) : undefined;
     const thresholds = req.body.thresholds ? JSON.parse(req.body.thresholds) : undefined;
-    const { svg } = await vectorizePostit(req.file.buffer, { crop, thresholds });
+    const { svg, original } = await vectorizePostit(req.file.buffer, { crop, thresholds });
     const pad = String(id).padStart(3, "0");
 
     const [originalUrl, svgUrl] = await Promise.all([
-      uploadToBucket(`originales/${pad}.jpg`, req.file.buffer, req.file.mimetype),
+      // `original` ya es JPEG apto para navegador (HEIC convertido si hacia falta)
+      uploadToBucket(`originales/${pad}.jpg`, original, "image/jpeg"),
       uploadToBucket(`svg/${pad}.svg`, Buffer.from(svg), "image/svg+xml"),
     ]);
 
