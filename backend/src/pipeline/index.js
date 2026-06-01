@@ -12,10 +12,11 @@ import { POTRACE } from "./config.js";
 //   - previewPng: render PNG del SVG para previsualizar
 //   - masks:      { forma, detalle } PNGs intermedios (utiles para depurar el spike)
 //
-// opts se pasa a detectBorder (p.ej. { crop } para recorte manual de fallback).
+// opts: { crop } para recorte manual; { thresholds } para ajustar por foto
+// cuanta tinta se queda en cada capa (blackMax / redMinR / redDelta).
 export async function vectorizePostit(inputBuffer, opts = {}) {
   const cropped = await detectBorder(inputBuffer, opts);
-  const { forma, detalle, width } = await separateColors(cropped);
+  const { forma, detalle, width } = await separateColors(cropped, opts.thresholds);
 
   const [formaD, detalleD] = await Promise.all([
     tracePath(forma, POTRACE.forma),

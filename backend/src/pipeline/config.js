@@ -6,7 +6,7 @@
 export const COLORS = {
   // Color fijo identico para TODOS los diablos (decision de proyecto):
   // el SVG solo guarda la forma, el color se impone aqui.
-  forma: "#C0392B", // rojo
+  forma: "#CB3747", // rojo
   detalle: "#1A1A1A", // negro
 };
 

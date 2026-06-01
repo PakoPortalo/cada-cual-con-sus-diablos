@@ -9,8 +9,12 @@ import { THRESHOLDS } from "./config.js";
 // En cada mascara el "tinta" (lo que potrace vectoriza) se pinta NEGRO (0) sobre
 // fondo BLANCO (255), que es lo que potrace espera.
 //
+// `overrides` permite ajustar los umbrales por foto desde la UI de captura:
+//   blackMax  ↑  => mas pixeles cuentan como NEGRO (mas detalle)
+//   redMinR   ↓  /  redDelta ↓  => mas pixeles cuentan como ROJO (mas forma)
+//
 // Devuelve { forma, detalle } como buffers PNG en escala de grises.
-export async function separateColors(croppedBuffer) {
+export async function separateColors(croppedBuffer, overrides = {}) {
   const { data, info } = await sharp(croppedBuffer)
     .removeAlpha()
     .raw()
@@ -21,7 +25,7 @@ export async function separateColors(croppedBuffer) {
   const forma = Buffer.alloc(n, 255);
   const detalle = Buffer.alloc(n, 255);
 
-  const { blackMax, redMinR, redDelta } = THRESHOLDS;
+  const { blackMax, redMinR, redDelta } = { ...THRESHOLDS, ...overrides };
 
   for (let i = 0, p = 0; i < n; i++, p += channels) {
     const r = data[p];
