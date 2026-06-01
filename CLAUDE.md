@@ -154,7 +154,7 @@ Uso posterior: cuadro 3×3 (AI/Figma), camisetas (SVG → Victor Morera DTF), we
 
 ## Estado actual
 
-✅ Hecho: 100 post-its dibujados · concepto (Cookie Punk).
+✅ Hecho: 100 post-its dibujados · concepto (Cukipunky).
 🔄 En curso: cuenta Shopify (contenido pendiente).
 ⏳ Pendiente: nombre · numeración · toda la app (dev/vectorización/votación/DB) · digitalización · votación · ranking · serigrafías · camisetas · marco · vídeo.
 
