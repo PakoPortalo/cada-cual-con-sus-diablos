@@ -15,6 +15,23 @@ export function getVotanteId() {
   return id;
 }
 
+export async function getVotante() {
+  const r = await fetch(`${API}/votante/${getVotanteId()}`);
+  if (!r.ok) throw new Error((await r.json()).error || "Error");
+  return r.json(); // { registrado, nombre }
+}
+
+// nombre vacio/omitido => anonimo
+export async function registrarVotante(nombre) {
+  const r = await fetch(`${API}/votante`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ votante_id: getVotanteId(), nombre: nombre || "" }),
+  });
+  if (!r.ok) throw new Error((await r.json()).error || "Error");
+  return r.json();
+}
+
 export async function fetchPendientes() {
   const r = await fetch(`${API}/diablos?votante=${getVotanteId()}`);
   if (!r.ok) throw new Error((await r.json()).error || "Error");

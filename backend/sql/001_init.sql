@@ -18,13 +18,22 @@ create table if not exists diablos (
 );
 
 -- ─────────────────────────────────────────────────────────────────────────────
+-- Votantes: un registro por amigo. votante_id = uuid generado en el navegador y
+-- guardado en localStorage. nombre opcional ("¿cómo te llamas?" o anónimo => null).
+-- ─────────────────────────────────────────────────────────────────────────────
+create table if not exists votantes (
+  votante_id text primary key,
+  nombre     text,                                   -- null = anónimo
+  creado_en  timestamptz not null default now()
+);
+
+-- ─────────────────────────────────────────────────────────────────────────────
 -- Votos: un voto por (diablo, votante). Persistencia e idempotencia.
--- votante_id = uuid generado en el navegador del amigo y guardado en localStorage.
 -- ─────────────────────────────────────────────────────────────────────────────
 create table if not exists votos (
   id         bigint generated always as identity primary key,
   diablo_id  int  not null references diablos(id) on delete cascade,
-  votante_id text not null,
+  votante_id text not null references votantes(votante_id) on delete cascade,
   valor      smallint not null check (valor in (-1, 1)), -- 1 = 👿, -1 = 💀
   creado_en  timestamptz not null default now(),
   unique (diablo_id, votante_id) -- no se puede votar dos veces el mismo diablo
@@ -38,8 +47,9 @@ create index if not exists diablos_estado_idx on diablos (estado);
 -- de acceso vive en la API. Dejamos RLS activada y SIN politicas publicas para
 -- que la ANON key no pueda leer/escribir directamente.
 -- ─────────────────────────────────────────────────────────────────────────────
-alter table diablos enable row level security;
-alter table votos   enable row level security;
+alter table diablos   enable row level security;
+alter table votantes  enable row level security;
+alter table votos     enable row level security;
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Storage: crear un bucket PUBLICO llamado "diablos" desde el dashboard

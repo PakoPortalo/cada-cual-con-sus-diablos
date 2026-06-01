@@ -1,17 +1,19 @@
 import { useEffect, useState } from "react";
-import { fetchPendientes, votar } from "../../api.js";
+import { fetchPendientes, votar, getVotante } from "../../api.js";
+import Nombre from "./Nombre.jsx";
 
 // Modo Publico: "Tinder de diablos". Un diablo a la vez, botones 👿/💀.
-// Persistencia por localStorage: al volver, solo aparecen los no votados.
-// Los votantes NO ven resultados ni ranking.
+// Primero pide nombre (o anonimo). Persistencia por localStorage: al volver,
+// salta el nombre y solo aparecen los no votados. NO ven resultados ni ranking.
 export default function Vote() {
   const [cola, setCola] = useState([]); // diablos pendientes
-  const [estado, setEstado] = useState("cargando"); // cargando|votando|fin|error
+  const [estado, setEstado] = useState("cargando"); // cargando|nombre|votando|fin|error
   const [restantes, setRestantes] = useState(0);
   const [total, setTotal] = useState(0);
   const [error, setError] = useState("");
 
-  useEffect(() => {
+  function cargarPendientes() {
+    setEstado("cargando");
     fetchPendientes()
       .then((d) => {
         setCola(d.diablos);
@@ -19,6 +21,16 @@ export default function Vote() {
         setTotal(d.total);
         setEstado(d.completado || d.diablos.length === 0 ? "fin" : "votando");
       })
+      .catch((e) => {
+        setError(e.message);
+        setEstado("error");
+      });
+  }
+
+  useEffect(() => {
+    // ¿este navegador ya se registro? Si no, pedir nombre antes de votar.
+    getVotante()
+      .then((v) => (v.registrado ? cargarPendientes() : setEstado("nombre")))
       .catch((e) => {
         setError(e.message);
         setEstado("error");
@@ -40,6 +52,7 @@ export default function Vote() {
   }
 
   if (estado === "cargando") return <div className="center">Cargando diablos…</div>;
+  if (estado === "nombre") return <Nombre onListo={cargarPendientes} />;
   if (estado === "error")
     return (
       <div className="center">
