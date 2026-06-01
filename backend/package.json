@@ -1,0 +1,16 @@
+{
+  "name": "diablos-backend",
+  "version": "0.1.0",
+  "description": "API + pipeline de vectorizacion para Cada cual con sus diablos",
+  "type": "module",
+  "scripts": {
+    "spike": "node spike/run.js",
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "potrace": "^2.1.8",
+    "sharp": "^0.33.5"
+  },
+  "devDependencies": {}
+}

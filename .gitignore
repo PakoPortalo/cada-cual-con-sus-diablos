@@ -1,0 +1,13 @@
+node_modules/
+.env
+.env.*
+!.env.example
+dist/
+build/
+*.log
+.DS_Store
+backend/spike/output/
+backend/spike/input/*
+!backend/spike/input/.gitkeep
+*.docx
+.claude/
