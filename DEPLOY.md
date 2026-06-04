@@ -61,10 +61,13 @@ mkdir -p /opt/diablos && chown diablos:diablos /opt/diablos
 # como usuario diablos:
 sudo -u diablos -H bash
 cd /opt
-git clone https://github.com/TU_USUARIO/cada-cual-con-sus-diablos.git diablos
+git clone https://github.com/PakoPortalo/cada-cual-con-sus-diablos.git diablos
 cd diablos
 ```
-> Si aún no está en GitHub, ver §7 (subir el repo) — o copia los archivos con `scp`.
+> Repo **privado**: en el servidor te pedirá login. Lo más fácil: genera un
+> **Personal Access Token** (github.com → Settings → Developer settings → Tokens,
+> permiso `repo`) y úsalo como contraseña al clonar. (O hacemos el repo público,
+> o subimos por `scp` — dime qué prefieres.)
 
 ---
 
