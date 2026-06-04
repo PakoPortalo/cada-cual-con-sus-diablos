@@ -24,25 +24,21 @@ button:active { transform: translateY(1px); }
 a { color: var(--rojo); }
 .wrap { max-width: 720px; margin: 0 auto; padding: 1rem; }
 
-/* ── Votacion publica ───────────────────────────────────────────── */
-.vote-screen {
-  height: 100dvh; display: flex; flex-direction: column;
-  align-items: center; justify-content: space-between; padding: 1rem;
+/* ── Votacion publica · pantalla final (fanzine) ────────────────────── */
+.fin {
+  min-height: 100dvh; background: #1f1e1e; color: var(--crema);
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 2.2rem 1.6rem; gap: 0.5rem;
+  animation: seqIn 0.6s ease both;
 }
-.vote-counter { font-weight: 700; opacity: 0.6; }
-.vote-img {
-  flex: 1; width: 100%; display: flex; align-items: center; justify-content: center;
-  min-height: 0;
+.fin-emoji { font-size: 4.5rem; line-height: 1; }
+.fin-title {
+  margin: 0.5rem 0 0; font-size: clamp(1.9rem, 8vw, 2.9rem); line-height: 0.95;
+  text-transform: uppercase; font-weight: 900; font-style: italic; letter-spacing: -0.01em;
 }
-.vote-img img { max-width: 92%; max-height: 100%; object-fit: contain; }
-.vote-buttons { display: flex; gap: 1rem; width: 100%; max-width: 420px; }
-.vote-buttons button {
-  flex: 1; font-size: 2.4rem; padding: 1.1rem 0; border-radius: 18px;
-}
-.vote-no { background: #fff; }
-.vote-si { background: var(--rojo); border-color: var(--negro); }
-.vote-done { text-align: center; }
-.vote-done h1 { font-size: 2rem; }
+.fin-text { margin: 0; font-size: 1.1rem; opacity: 0.85; }
+.fin .hl { color: var(--rojo); }
 
 /* ── Dev ────────────────────────────────────────────────────────── */
 .topbar {
@@ -71,6 +67,9 @@ a { color: var(--rojo); }
   display: flex; align-items: center; justify-content: center; overflow: hidden;
 }
 .cmp .svgbox svg { width: 100%; height: 100%; }
+/* Toggle de capas (checkboxes) sobre el SVG en vivo */
+.cmp .svgbox.hide-forma #forma { display: none; }
+.cmp .svgbox.hide-detalle #detalles { display: none; }
 .cmp figcaption { font-size: 0.85rem; opacity: 0.7; margin-top: 0.25rem; }
 .cmp .loading { outline: 3px dashed var(--rojo); outline-offset: -6px; }
 .masks { margin-top: 0.75rem; }
@@ -104,10 +103,43 @@ input[type="text"], input[type="number"], input[type="email"], input[type="passw
   grid-template-columns: repeat(3, 1fr); /* MÓVIL: 3 por fila */
   gap: 1rem;
 }
-.gallery img { width: 100%; aspect-ratio: 1; object-fit: contain; }
+.gallery .g-item { position: relative; margin: 0; }
+.gallery .g-item img { width: 100%; aspect-ratio: 1; object-fit: contain; display: block; }
+/* Pie con el ID: oculto, aparece al pasar el ratón, abajo a la derecha */
+.gallery .g-id {
+  position: absolute; right: 4px; bottom: 4px;
+  font-size: 0.7rem; font-weight: 700; line-height: 1;
+  padding: 0.2rem 0.4rem; border-radius: 6px;
+  background: var(--negro); color: var(--crema);
+  opacity: 0; transition: opacity 0.15s ease; pointer-events: none;
+}
+.gallery .g-item:hover .g-id { opacity: 1; }
 @media (min-width: 700px) {
   .gallery-full { padding: 72px 200px 100px; } /* DESKTOP: 200px de margen lateral */
   .gallery { grid-template-columns: repeat(4, 1fr); } /* DESKTOP: grid de 4 */
+}
+
+/* Cámara con cuadro guía cuadrado */
+.cam { max-width: 520px; margin: 0 auto; }
+.cam-square {
+  position: relative; width: 100%; aspect-ratio: 1;
+  background: #000; border-radius: 12px; overflow: hidden;
+}
+.cam-square video {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+}
+/* Guía: cuadrado de línea fina para encuadrar de frente */
+.cam-guide {
+  position: absolute; inset: 6%;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  pointer-events: none;
+}
+
+/* Recorte manual */
+.crop { max-width: 520px; margin: 0 auto; }
+.crop-area {
+  position: relative; width: 100%; aspect-ratio: 1;
+  background: #000; border-radius: 12px; overflow: hidden;
 }
 
 .badge { display: inline-block; font-size: 0.7rem; padding: 0.1rem 0.4rem; border-radius: 6px; border: 1px solid var(--negro); }
@@ -117,3 +149,359 @@ input[type="text"], input[type="number"], input[type="email"], input[type="passw
 .err { color: #b00020; font-weight: 600; }
 .btn-primary { background: var(--rojo); color: #fff; border-color: var(--negro); }
 .center { min-height: 100dvh; display: flex; align-items: center; justify-content: center; }
+
+/* Modal */
+.modal-bg {
+  position: fixed; inset: 0; z-index: 60;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex; align-items: center; justify-content: center; padding: 1rem;
+}
+.modal {
+  background: #fff; border: 2px solid var(--negro); border-radius: 14px;
+  padding: 1.25rem; max-width: 360px; width: 100%; text-align: center;
+}
+
+/* ─── Cola de lote (captura de varias fotos) ─────────────────────────────── */
+.cola { margin: 1rem 0; }
+.cola-cab {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 0.5rem; margin-bottom: 0.5rem; flex-wrap: wrap;
+}
+.cola-tira {
+  display: flex; gap: 0.4rem; overflow-x: auto; padding: 0.25rem;
+  background: var(--crema); border: 2px solid var(--negro); border-radius: 12px;
+}
+.cola-item {
+  position: relative; flex: 0 0 auto; width: 56px; height: 56px;
+  border: 2px solid #ccc; border-radius: 8px; overflow: hidden; background: #fff;
+}
+.cola-item img { width: 100%; height: 100%; object-fit: cover; }
+.cola-item.actual { border-color: var(--rojo); box-shadow: 0 0 0 2px var(--rojo); }
+.cola-item.est-guardado { opacity: 0.55; }
+.cola-item.est-saltado { opacity: 0.4; }
+.cola-item .badge {
+  position: absolute; top: 2px; right: 2px; font-size: 0.65rem;
+  padding: 0 0.25rem; line-height: 1.3;
+}
+.cola-item .badge.ok { background: var(--rojo); color: #fff; }
+.cola-item .badge.skip { background: var(--amarillo); }
+
+/* ═══ Intro de la votación (fanzine) ─────────────────────────────────────── */
+/* Secuencia de slides (fade in/out al tocar) */
+.seq {
+  min-height: 100dvh; background: #1f1e1e; color: var(--crema);
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 2.2rem 1.6rem; text-align: center; cursor: pointer;
+  position: relative; user-select: none; -webkit-user-select: none;
+}
+.seq-slide { max-width: 540px; }
+.seq-slide.entrando { animation: seqIn 0.6s ease both; }
+.seq-slide.saliendo { animation: seqOut 0.4s ease both; }
+@keyframes seqIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes seqOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-10px); } }
+.seq-logo {
+  display: block; width: min(82vw, 460px); height: auto; margin: 0 auto;
+  animation: boil 0.45s steps(1) infinite;
+}
+.seq-by {
+  margin: 0.6rem 0 0; text-align: center;
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  font-size: 1rem; letter-spacing: 0.25em; text-transform: lowercase;
+  color: var(--crema); opacity: 0.65;
+  transform: translate(0px, -40px);   /* ← añade esta línea */
+
+}
+/* "boil": alterna entre 3 distorsiones a pocos fps -> el trazo se mueve */
+@keyframes boil {
+  0%   { filter: url(#boil0); }
+  33%  { filter: url(#boil1); }
+  66%  { filter: url(#boil2); }
+  100% { filter: url(#boil0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .seq-logo { animation: none; filter: none; }
+}
+.seq-text { margin: 0; font-size: clamp(1.15rem, 5vw, 1.5rem); line-height: 1.5; }
+.seq-text b {
+  color: var(--rojo); display: inline-block;
+  animation: boilText 0.45s steps(1) infinite;
+}
+@keyframes boilText {
+  0%   { filter: url(#boilt0); }
+  33%  { filter: url(#boilt1); }
+  66%  { filter: url(#boilt2); }
+  100% { filter: url(#boilt0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .seq-text b { animation: none; filter: none; }
+}
+.seq-hint {
+  position: absolute; bottom: 1.6rem; left: 0; right: 0;
+  text-transform: uppercase; letter-spacing: 0.18em; font-size: 0.72rem;
+  opacity: 0.5; animation: seqHint 1.8s ease-in-out infinite;
+}
+@keyframes seqHint { 0%, 100% { opacity: 0.25; } 50% { opacity: 0.6; } }
+@media (prefers-reduced-motion: reduce) {
+  .seq-slide.entrando, .seq-slide.saliendo, .seq-hint { animation: none; }
+}
+
+/* Registro de nombre (tras la secuencia) */
+.intro {
+  min-height: 100dvh; background: #1f1e1e; color: var(--crema);
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  display: flex; align-items: center; justify-content: center;
+  padding: 2.2rem 1.3rem;
+}
+.intro-inner { width: 100%; max-width: 440px; }
+.intro-fadein { animation: seqIn 0.6s ease both; }
+.intro-kicker {
+  text-transform: uppercase; letter-spacing: 0.18em; font-size: 0.74rem;
+  font-weight: 700; color: var(--rojo); margin: 0 0 0.7rem;
+}
+.intro-form { display: flex; flex-direction: column; gap: 0.7rem; }
+.intro-label { text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.78rem; opacity: 0.8; }
+.intro-form input {
+  width: 100%; background: #1f1e1e; color: var(--crema);
+  border: 2px solid var(--crema); border-radius: 0;
+  padding: 0.7rem; font: inherit;
+}
+.intro-form input::placeholder { color: rgba(244, 234, 210, 0.45); }
+.intro-botones { display: flex; gap: 0.7rem; margin-top: 0.3rem; }
+.intro-btn {
+  flex: 1; background: var(--rojo); color: #fff;
+  border: 3px solid var(--rojo); border-radius: 0;
+  text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em;
+  font-size: 1.05rem; padding: 0.8rem 0; cursor: pointer;
+}
+.intro-btn.ghost { background: transparent; color: var(--crema); border-color: var(--crema); }
+.intro-btn:disabled { opacity: 0.4; }
+
+/* ═══ Votación pública · fanzine (post-it amarillo, pila animada) ═════════ */
+.ev2 {
+  display: flex; flex-direction: column; height: 100%;
+  background: #1f1e1e; color: var(--crema);
+  font-family: "Helvetica Neue", Arial, sans-serif; padding: 1.2rem;
+}
+.ev2-live { min-height: 100dvh; }
+/* contador (solo "restantes"), arriba a la derecha, desvinculado del ID */
+.ev2-head { display: flex; align-items: baseline; justify-content: flex-end; gap: 0.5rem; }
+.ev2-count {
+  font-size: 3.4rem; font-weight: 800; line-height: 0.9; color: var(--rojo);
+  letter-spacing: -0.04em; font-style: italic;
+}
+.ev2-of { font-size: 1rem; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.1em; }
+
+/* En ordenador: la votación se ve como un "teléfono" centrado (div negro con
+   esquinas redondeadas). En móvil ocupa toda la pantalla. */
+@media (min-width: 700px) {
+  .vote-stage-wrap {
+    min-height: 100dvh; display: flex; align-items: center; justify-content: center;
+    background: var(--crema); padding: 2rem;
+  }
+  .vote-stage-wrap .ev2-live {
+    width: 420px; height: min(880px, 92dvh); min-height: 0;
+    border-radius: 30px; overflow: hidden;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.3);
+  }
+}
+.ev2-stage { position: relative; flex: 1; min-height: 0; }
+/* cada post-it colocado ocupa el escenario y se centra; rotación/offset/opacidad
+   inline. perspective aquí para que el "pegado" 3D del hijo tenga profundidad. */
+.ev2-item {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  perspective: 700px;
+  transition: opacity 0.4s ease;
+}
+.ev2-block {
+  position: relative; background: #feff9c; padding: 7%;
+  width: min(82%, 70vmin); aspect-ratio: 1;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.45);
+}
+/* franja superior = zona "pegada" del post-it */
+.ev2-block::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 16%;
+  background: linear-gradient(rgba(0, 0, 0, 0.09), rgba(0, 0, 0, 0));
+  pointer-events: none;
+}
+.ev2-block img { width: 100%; height: 100%; object-fit: contain; }
+/* "pegado": viene de frente (eje Z) y se adhiere pivotando desde la esquina
+   superior derecha, como cuando pegas un post-it en el cristal. Sin rebote. */
+.ev2-drop { animation: ev2stick 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; transform-origin: 88% 8%; }
+@keyframes ev2stick {
+  0%   { opacity: 0; transform: translateZ(90px) rotateX(30deg) rotateY(-24deg) scale(1.08); }
+  55%  { opacity: 1; }
+  100% { opacity: 1; transform: translateZ(0) rotateX(0) rotateY(0) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ev2-drop { animation: none; }
+}
+/* botones: NO y SÍ idénticos; el NO solo cambia el color de la tipografía */
+.ev2-buttons { display: flex; gap: 0.8rem; }
+.ev2-buttons button {
+  flex: 1; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;
+  font-size: 1.3rem; padding: 1rem 0; border-radius: 0;
+  border: 3px solid var(--crema); background: var(--negro); color: var(--crema);
+}
+.ev2-buttons .bt-no { color: var(--rojo); }
+
+
+/* ─── Panel: estadísticas de participación ───────────────────────────────── */
+.stats-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 0.75rem; margin: 0.75rem 0;
+}
+.stat {
+  background: var(--crema); border: 2px solid var(--negro); border-radius: 10px;
+  padding: 0.6rem; text-align: center;
+}
+.stat b { display: block; font-size: 1.6rem; line-height: 1; color: var(--rojo); }
+.stat span { font-size: 0.75rem; opacity: 0.75; }
+.votantes-det summary { cursor: pointer; font-size: 0.9rem; }
+.votantes-lista { list-style: none; padding: 0; margin: 0.5rem 0 0; }
+.votantes-lista li {
+  display: flex; justify-content: space-between; gap: 1rem;
+  padding: 0.3rem 0.2rem; border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+.vn-anon { opacity: 0.5; font-style: italic; }
+.vn-nombre { font-weight: 600; }
+.vn-votos { font-variant-numeric: tabular-nums; opacity: 0.8; }
+
+/* ─── Vista previa del cuadro (Top 9 enmarcado) ──────────────────────────── */
+.cuadro-full {
+  position: fixed; inset: 0; z-index: 50;
+  background: rgba(20, 16, 10, 0.92);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px; overflow-y: auto;
+}
+/* marco dorado/oscuro con bisel */
+.cuadro-marco {
+  background: linear-gradient(135deg, #6e4a12, #c9a227 35%, #8b6914 60%, #d4af37 85%, #5e3d0e);
+  padding: 22px; border-radius: 4px;
+  box-shadow:
+    0 40px 90px rgba(0, 0, 0, 0.6),
+    inset 0 0 0 2px rgba(0, 0, 0, 0.35),
+    inset 0 0 14px rgba(0, 0, 0, 0.45);
+  max-width: min(560px, 92vw);
+}
+/* passe-partout (paspartú) crema */
+.cuadro-mat {
+  background: var(--crema); padding: 24px;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.18);
+}
+.cuadro-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.cuadro-cell {
+  background: #feff9c; aspect-ratio: 1; padding: 9%;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.28);
+}
+.cuadro-cell img { width: 100%; height: 100%; object-fit: contain; }
+/* placa del título */
+.cuadro-placa {
+  margin: 16px auto 2px; text-align: center; max-width: 80%;
+  background: #1a1a1a; color: #d4af37;
+  font-family: Georgia, "Times New Roman", serif; font-style: italic;
+  letter-spacing: 0.03em; font-size: 0.9rem;
+  padding: 0.35rem 0.8rem; border-radius: 3px;
+  box-shadow: inset 0 0 0 1px rgba(212, 175, 55, 0.5);
+}
+
+/* ═══ Panel Dev · Fanzine sólido ═════════════════════════════════════════ */
+.dev {
+  min-height: 100dvh; background: #1f1e1e; color: var(--crema);
+  font-family: "Helvetica Neue", Arial, sans-serif;
+}
+.dev .wrap { max-width: 1040px; }
+.dev a { color: var(--rojo); }
+.dev small { color: rgba(244, 234, 210, 0.7); }
+
+/* topbar */
+.dev .topbar {
+  background: #1f1e1e; border-bottom: 2px solid var(--crema);
+  padding: 1rem 1.4rem; text-transform: uppercase; letter-spacing: 0.05em;
+}
+.dev .dev-logo { color: var(--crema); font-weight: 800; }
+.dev .topbar nav a {
+  color: var(--crema); text-transform: uppercase; font-weight: 700;
+  font-size: 0.82rem; letter-spacing: 0.06em;
+}
+
+/* titulares */
+.dev h2, .dev h3 { text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* tarjetas */
+.dev .card {
+  background: #161616; color: var(--crema);
+  border: 3px solid var(--crema); border-radius: 0;
+}
+
+/* botones fanzine (bloque crema sobre negro) */
+.dev button {
+  background: #1f1e1e; color: var(--crema); border: 3px solid var(--crema);
+  border-radius: 0; text-transform: uppercase; font-weight: 800;
+  letter-spacing: 0.04em; font-size: 0.82rem; padding: 0.5rem 0.85rem;
+}
+.dev button:disabled { opacity: 0.45; }
+.dev .btn-primary { background: #1f1e1e; color: var(--rojo); border-color: var(--crema); }
+
+/* inputs */
+.dev input[type="text"], .dev input[type="number"],
+.dev input[type="email"], .dev input[type="password"] {
+  background: #1f1e1e; color: var(--crema);
+  border: 2px solid var(--crema); border-radius: 0;
+}
+.dev input::placeholder { color: rgba(244, 234, 210, 0.5); }
+
+/* badges de estado -> contorno */
+.dev .badge {
+  background: transparent; border: 2px solid currentColor; border-radius: 0;
+  text-transform: uppercase; font-weight: 700;
+}
+.dev .badge.pendiente { color: var(--amarillo); }
+.dev .badge.activo { color: #7fd18a; }
+.dev .badge.archivado { color: #b3b3b3; }
+
+/* stats */
+.dev .stat { background: #1f1e1e; border: 2px solid var(--crema); border-radius: 0; }
+.dev .stat b { color: var(--rojo); font-style: italic; }
+.dev .stat span { color: var(--crema); opacity: 0.7; }
+.dev .votantes-lista li { border-bottom-color: rgba(244, 234, 210, 0.15); }
+.dev .vn-anon { color: rgba(244, 234, 210, 0.55); }
+.dev .votantes-det summary { color: var(--crema); }
+
+/* grid de diablos -> post-it amarillo */
+.dev .grid .tile {
+  background: #feff9c; color: var(--negro);
+  border: 2px solid var(--negro); border-radius: 0;
+}
+.dev .grid .tile img { background: transparent; }
+.dev .grid .tile .meta { color: var(--negro); }
+.dev .grid .tile .badge { color: var(--negro); border-color: var(--negro); }
+.dev .grid .tile button {
+  background: transparent; color: var(--negro); border: none;
+  padding: 0.1rem 0.3rem; font-size: 1rem; font-weight: 700; text-transform: none;
+}
+.dev .grid .tile button:hover { opacity: 0.6; }
+/* círculo de ranking (top 9), abajo-izquierda de la imagen */
+.dev .tile-img { position: relative; }
+.dev .tile .rank {
+  position: absolute; bottom: 88px; left: -18px; z-index: 2;
+  width: 26px; height: 26px; border-radius: 50%;
+  background: #1f1e1e; color: #fff; border: 2px solid #feff9c;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 0.8rem; line-height: 1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+.dev .tile .rank.top3 { color: var(--rojo); }
+
+/* modal de edición */
+.dev .modal {
+  background: #161616; color: var(--crema);
+  border: 3px solid var(--crema); border-radius: 0;
+}
+
+/* captura: cajas de imagen siguen en crema para ver bien el diablo */
+.dev .masks summary { color: var(--crema); }
+

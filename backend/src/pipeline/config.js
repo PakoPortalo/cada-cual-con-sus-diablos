@@ -10,19 +10,21 @@ export const COLORS = {
   detalle: "#1A1A1A", // negro
 };
 
+// Umbrales en HSV (0–100 para brillo/saturacion, 0–360 para tono).
 export const THRESHOLDS = {
-  // Un pixel es NEGRO (detalle) si su canal mas brillante esta por debajo de esto.
-  blackMax: 85,
-  // Un pixel es ROJO (forma) si el rojo domina con este margen sobre verde y azul...
-  redMinR: 110,
-  redDelta: 40,
+  valueMax: 30, // NEGRO: brillo por debajo de esto (detalle/tinta negra)
+  satMin: 35, // ROJO: saturacion minima para contar como color
+  hueRange: 30, // ROJO: grados alrededor del rojo puro (0/360) que se aceptan
 };
 
 // Lado del SVG de salida en unidades de usuario (post-it ~74mm). Coordenadas 1:1.
 export const SVG_SIZE = 74;
 
-// Opciones de potrace por capa. turdSize elimina motas de ruido (puntos sueltos).
+// Opciones de potrace por capa:
+//   turdSize     elimina motas de ruido (puntos sueltos)
+//   optTolerance suaviza/optimiza las curvas (mas alto = linea mas limpia)
+//   alphaMax     redondeo de esquinas (mas alto = mas curvo, menos anguloso)
 export const POTRACE = {
-  forma: { turdSize: 30, optTolerance: 0.4 },
-  detalle: { turdSize: 15, optTolerance: 0.3 },
+  forma: { turdSize: 40, optTolerance: 1.2, alphaMax: 1 },
+  detalle: { turdSize: 20, optTolerance: 0.8, alphaMax: 1 },
 };

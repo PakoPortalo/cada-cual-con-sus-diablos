@@ -1,0 +1,19 @@
+# Servicio systemd para el backend. Copiar a /etc/systemd/system/diablos-api.service
+# Arranca el servidor Node, lo reinicia si se cae y lo levanta al reiniciar la máquina.
+
+[Unit]
+Description=Diablos backend (Express + Supabase)
+After=network.target
+
+[Service]
+Type=simple
+User=diablos
+WorkingDirectory=/opt/diablos/backend
+EnvironmentFile=/opt/diablos/backend/.env
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/node src/index.js
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

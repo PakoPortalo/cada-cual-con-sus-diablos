@@ -20,7 +20,7 @@ export default function Login() {
   return (
     <div className="center">
       <form className="card" onSubmit={entrar} style={{ minWidth: 280 }}>
-        <h2>👿 Modo Dev</h2>
+        <h2>👿 Modo Dev 😈</h2>
         <p>
           <input
             type="email"

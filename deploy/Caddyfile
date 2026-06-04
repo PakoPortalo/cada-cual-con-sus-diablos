@@ -1,0 +1,20 @@
+# Caddy: sirve el frontend (estático) y reenvía /api al backend Node.
+# Mismo dominio para todo => sin CORS, y HTTPS automático (Let's Encrypt).
+# Copiar a /etc/caddy/Caddyfile en el servidor.
+
+diablos.es, www.diablos.es {
+	encode zstd gzip
+
+	# API -> backend Express. handle_path quita el prefijo /api, así
+	# /api/admin/x llega al backend como /admin/x (igual que el proxy de Vite).
+	handle_path /api/* {
+		reverse_proxy 127.0.0.1:3001
+	}
+
+	# Frontend (SPA): build de Vite. Cualquier ruta desconocida -> index.html.
+	handle {
+		root * /opt/diablos/frontend/dist
+		try_files {path} /index.html
+		file_server
+	}
+}

@@ -11,3 +11,8 @@ backend/spike/input/*
 !backend/spike/input/.gitkeep
 *.docx
 .claude/
+
+# Copias de seguridad locales de la DB (ya respaldadas aparte)
+Backups/
+# Fotos originales de los post-its (~34M; están en Supabase Storage)
+Visual/100 diablos - Fotos Originales/

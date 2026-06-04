@@ -17,13 +17,23 @@ export default function Dev() {
     return () => sub.subscription.unsubscribe();
   }, []);
 
-  if (session === undefined) return <div className="center">Cargando…</div>;
-  if (!session) return <Login />;
+  if (session === undefined)
+    return (
+      <div className="dev">
+        <div className="center">Cargando…</div>
+      </div>
+    );
+  if (!session)
+    return (
+      <div className="dev">
+        <Login />
+      </div>
+    );
 
   return (
-    <div>
+    <div className="dev">
       <div className="topbar">
-        <strong>👿 Dev</strong>
+        <strong className="dev-logo">👿 Cada cual con sus diablos</strong>
         <nav>
           <Link to="/dev">Captura</Link>
           <Link to="/dev/panel">Panel</Link>
