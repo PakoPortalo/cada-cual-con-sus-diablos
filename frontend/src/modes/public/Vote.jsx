@@ -105,7 +105,13 @@ export default function Vote() {
     }
   }
 
-  if (estado === "cargando") return <div className="center">Cargando diablos…</div>;
+  if (estado === "cargando")
+    return (
+      <div className="cargando">
+        <div className="cargando-em">😈</div>
+        <p>cargando diablos…</p>
+      </div>
+    );
   if (estado === "nombre")
     return (
       <Nombre
@@ -127,8 +133,9 @@ export default function Vote() {
     );
   if (estado === "error")
     return (
-      <div className="center">
-        <p className="err">Ups: {error}</p>
+      <div className="cargando">
+        <div className="cargando-em">💀</div>
+        <p>Ups: {error}</p>
       </div>
     );
   if (estado === "fin")
