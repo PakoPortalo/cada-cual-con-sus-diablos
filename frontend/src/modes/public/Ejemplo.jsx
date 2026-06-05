@@ -12,6 +12,7 @@ const inicial = () => MUESTRA.map((id) => ({ id, url: svg(id) }));
 
 export default function Ejemplo() {
   const [fase, setFase] = useState("intro"); // intro | votando | fin
+  const [nombre, setNombre] = useState(""); // nombre del intro demo (vacío = anónimo)
   const [cola, setCola] = useState(inicial);
   const [pila, setPila] = useState([]);
   const keyRef = useRef(0);
@@ -36,26 +37,37 @@ export default function Ejemplo() {
     if (resto.length === 0) setFase("fin");
   }
 
-  function reiniciar() {
-    setCola(inicial());
-    setPila([]);
-    setFase("votando");
-  }
+  if (fase === "intro")
+    return (
+      <Nombre
+        demo
+        onListo={(nom) => {
+          setNombre(nom || "");
+          setFase("votando");
+        }}
+      />
+    );
 
-  if (fase === "intro") return <Nombre demo onListo={() => setFase("votando")} />;
-
+  // Pantalla final idéntica a la real, solo con el sello "ejemplo".
   if (fase === "fin")
     return (
       <div className="fin">
         <span className="badge-ejemplo">ejemplo</span>
         <div className="fin-emoji">😈</div>
         <h1 className="fin-title">
-          Esto es solo un <span className="hl">ejemplo</span>
+          ¡Has votado todos <span className="hl">los diablos</span>!
         </h1>
-        <p className="fin-text">Así se vota. En la de verdad, cada voto cuenta.</p>
-        <button className="intro-btn" style={{ marginTop: "1.2rem", maxWidth: 240 }} onClick={reiniciar}>
-          Repetir
-        </button>
+        <p className="fin-text">
+          Gracias por dedicarle este ratito
+          {nombre ? (
+            <>
+              , <span className="hl">{nombre}</span>
+            </>
+          ) : (
+            ""
+          )}
+          .
+        </p>
       </div>
     );
 
