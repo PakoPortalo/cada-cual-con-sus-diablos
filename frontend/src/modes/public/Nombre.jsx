@@ -84,7 +84,7 @@ function BoilFilters() {
   );
 }
 
-export default function Nombre({ onListo }) {
+export default function Nombre({ onListo, demo }) {
   const [fase, setFase] = useState("seq"); // seq | form
   const [paso, setPaso] = useState(0);
   const [saliendo, setSaliendo] = useState(false);
@@ -106,10 +106,15 @@ export default function Nombre({ onListo }) {
   }
 
   async function enviar(anon) {
+    const nom = anon ? "" : nombre.trim();
+    if (demo) {
+      // Modo ejemplo: no registra votante, solo avanza.
+      onListo(nom);
+      return;
+    }
     setCargando(true);
     setError("");
     try {
-      const nom = anon ? "" : nombre.trim();
       await registrarVotante(nom);
       onListo(nom);
     } catch (e) {

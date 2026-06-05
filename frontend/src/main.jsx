@@ -3,10 +3,12 @@ import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./styles.css";
 import Vote from "./modes/public/Vote.jsx";
+import Ejemplo from "./modes/public/Ejemplo.jsx";
 import Dev from "./modes/dev/Dev.jsx";
 
 const router = createBrowserRouter([
   { path: "/", element: <Vote /> }, // modo Publico (amigos votan)
+  { path: "/ejemplo", element: <Ejemplo /> }, // demo sin afectar a la votación
   { path: "/dev/*", element: <Dev /> }, // modo Dev (solo Pako)
 ]);
 
