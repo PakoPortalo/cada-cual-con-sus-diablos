@@ -7,6 +7,7 @@ import {
   descargarBackup, reiniciarVotos, fetchStats, fetchVotacion, setVotacionAbierta,
 } from "../../api.js";
 import EditarDiablo from "./EditarDiablo.jsx";
+import CuadroTop9 from "./CuadroTop9.jsx";
 
 // Formatea segundos a "Xm Ys" (o "Ys" si <1 min).
 function fmtDur(seg) {
@@ -326,29 +327,9 @@ export default function Admin() {
         />
       )}
 
-      {/* Vista previa del cuadro: top 9 enmarcados 3×3 */}
+      {/* Vista previa del cuadro: top 9 en 3×3, recolocables por arrastre */}
       {verCuadro && (
-        <div className="cuadro-full" onClick={() => setVerCuadro(false)}>
-          <button
-            className="gallery-close"
-            onClick={() => setVerCuadro(false)}
-            aria-label="Cerrar cuadro"
-          >
-            ✕
-          </button>
-          <div className="cuadro-marco" onClick={(e) => e.stopPropagation()}>
-            <div className="cuadro-mat">
-              <div className="cuadro-grid">
-                {ranking.slice(0, 9).map((d) => (
-                  <div className="cuadro-cell" key={d.id}>
-                    <img src={d.imagen_svg_url} alt="" />
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="cuadro-placa">Cada cual con sus diablos · Top 9</div>
-          </div>
-        </div>
+        <CuadroTop9 top9={ranking.slice(0, 9)} onClose={() => setVerCuadro(false)} />
       )}
 
       {/* Galería a pantalla completa */}
