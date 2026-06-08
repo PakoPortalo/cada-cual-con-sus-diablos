@@ -17,6 +17,25 @@ export const supabase = createClient(
 
 export const BUCKET = SUPABASE_BUCKET || "diablos";
 
+// Trae TODAS las filas de una tabla paginando (Supabase limita a 1000 por
+// consulta). Imprescindible para `votos`, que ya supera las 1000 filas: sin
+// esto los conteos salen truncados (votantes que parecen tener 0 votos).
+export async function selectAll(table, columns = "*", build) {
+  const PAGE = 1000;
+  let from = 0;
+  const todo = [];
+  for (;;) {
+    let q = supabase.from(table).select(columns).range(from, from + PAGE - 1);
+    if (build) q = build(q);
+    const { data, error } = await q;
+    if (error) throw new Error(error.message);
+    todo.push(...data);
+    if (data.length < PAGE) break;
+    from += PAGE;
+  }
+  return todo;
+}
+
 // Sube un buffer al bucket publico y devuelve su URL publica.
 export async function uploadToBucket(path, buffer, contentType) {
   const { error } = await supabase.storage

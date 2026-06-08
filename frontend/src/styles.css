@@ -41,6 +41,15 @@ a { color: var(--rojo); }
   50%      { opacity: 1;    transform: scale(1); }
 }
 @media (prefers-reduced-motion: reduce) { .cargando-em { animation: none; } }
+/* pantalla de error / 404 (reusa .cargando) */
+.error-title {
+  margin: 0.3rem 0 0; font-size: clamp(2.4rem, 11vw, 3.4rem); line-height: 0.95;
+  text-transform: uppercase; font-weight: 900; font-style: italic; letter-spacing: -0.01em;
+}
+.error-link {
+  margin-top: 0.8rem; color: var(--rojo); text-decoration: none;
+  text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.8rem; font-weight: 700;
+}
 
 /* ── Votacion publica · pantalla final (fanzine) ────────────────────── */
 .fin {

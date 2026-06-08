@@ -1,7 +1,7 @@
 import { Router } from "express";
 import multer from "multer";
 import { createRequire } from "module";
-import { supabase, uploadToBucket, BUCKET } from "../db/supabase.js";
+import { supabase, uploadToBucket, BUCKET, selectAll } from "../db/supabase.js";
 
 const require = createRequire(import.meta.url);
 const JSZip = require("jszip"); // CommonJS
@@ -177,23 +177,27 @@ adminRouter.post("/reset-votos", async (_req, res) => {
 // Copia de seguridad: ZIP con la base de datos (JSON) + todos los SVG e
 // imagenes originales. Para migrar o restaurar si se cae todo.
 adminRouter.get("/export", async (_req, res) => {
-  const [diablos, votantes, votos] = await Promise.all([
-    supabase.from("diablos").select("*").order("id"),
-    supabase.from("votantes").select("*"),
-    supabase.from("votos").select("*"),
-  ]);
-  const err = diablos.error || votantes.error || votos.error;
-  if (err) return res.status(500).json({ error: err.message });
+  let diablos, votantes, votos;
+  try {
+    // votos paginado (supera 1000 filas) para que el backup esté COMPLETO
+    [diablos, votantes, votos] = await Promise.all([
+      selectAll("diablos", "*", (q) => q.order("id")),
+      selectAll("votantes", "*"),
+      selectAll("votos", "*"),
+    ]);
+  } catch (e) {
+    return res.status(500).json({ error: e.message });
+  }
 
   const zip = new JSZip();
 
   // Base de datos como JSON
-  zip.file("data/diablos.json", JSON.stringify(diablos.data, null, 2));
-  zip.file("data/votantes.json", JSON.stringify(votantes.data, null, 2));
-  zip.file("data/votos.json", JSON.stringify(votos.data, null, 2));
+  zip.file("data/diablos.json", JSON.stringify(diablos, null, 2));
+  zip.file("data/votantes.json", JSON.stringify(votantes, null, 2));
+  zip.file("data/votos.json", JSON.stringify(votos, null, 2));
 
   // Archivos de Storage (SVG + originales) de cada diablo
-  for (const d of diablos.data) {
+  for (const d of diablos) {
     const pad = String(d.id).padStart(3, "0");
     for (const path of [`svg/${pad}.svg`, `originales/${pad}.jpg`]) {
       const { data } = await supabase.storage.from(BUCKET).download(path);
@@ -239,20 +243,22 @@ adminRouter.post("/votacion", async (req, res) => {
 // Estadisticas de participacion (solo Dev): abandono, media de diablos por
 // persona, y quien voto con nombre / anonimo.
 adminRouter.get("/stats", async (_req, res) => {
-  const [votantesR, votosR, activosR] = await Promise.all([
-    supabase.from("votantes").select("votante_id, nombre"),
-    supabase.from("votos").select("votante_id, creado_en"),
-    supabase
+  let votantes, votos, totalActivos;
+  try {
+    // paginado: votos ya supera las 1000 filas; sin esto los conteos se truncan
+    [votantes, votos] = await Promise.all([
+      selectAll("votantes", "votante_id, nombre"),
+      selectAll("votos", "votante_id, creado_en"),
+    ]);
+    const activosR = await supabase
       .from("diablos")
       .select("id", { count: "exact", head: true })
-      .eq("estado", "activo"),
-  ]);
-  const err = votantesR.error || votosR.error;
-  if (err) return res.status(500).json({ error: err.message });
-
-  const totalActivos = activosR.count ?? 0;
-  const votantes = votantesR.data;
-  const votos = votosR.data;
+      .eq("estado", "activo");
+    if (activosR.error) throw new Error(activosR.error.message);
+    totalActivos = activosR.count ?? 0;
+  } catch (e) {
+    return res.status(500).json({ error: e.message });
+  }
 
   // por votante: nº de votos + primer/último timestamp (para duración)
   const porVotante = new Map(); // id -> count
