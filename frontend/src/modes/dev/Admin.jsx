@@ -298,7 +298,9 @@ export default function Admin() {
                 <br />
                 <span className={`badge ${d.estado}`}>{d.estado}</span>
                 <br />
-                👿{d.votos_positivos} 💀{d.votos_negativos}
+                <span className="tile-votos">
+                  😈 <strong>{d.votos_positivos}</strong> votos
+                </span>
                 <br />
                 {d.estado !== "activo" && (
                   <button onClick={() => cambiarEstado(d.id, "activo")}>activar</button>

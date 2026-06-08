@@ -540,3 +540,7 @@ input[type="text"], input[type="number"], input[type="email"], input[type="passw
   text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.7rem;
   padding: 0.25rem 0.6rem; border: 2px solid var(--crema);
 }
+
+/* Votos (solo SÍ) en los tiles del panel */
+.dev .grid .tile .tile-votos { display: inline-block; margin-top: 0.1rem; }
+.dev .grid .tile .tile-votos strong { font-size: 1.05rem; }
