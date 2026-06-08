@@ -39,7 +39,9 @@ const SLIDES = [
     <p className="seq-text">
       El mecanismo es sencillo:
       <br />
+      <br />
       Vota a tantos diablos como quieras
+      <br />
       <br />
       Si conectas con el diablo, di que <b>SI</b>.
       <br />

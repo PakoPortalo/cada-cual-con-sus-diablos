@@ -299,7 +299,7 @@ export default function Admin() {
                 <span className={`badge ${d.estado}`}>{d.estado}</span>
                 <br />
                 <span className="tile-votos">
-                  😈 <strong>{d.votos_positivos}</strong> votos
+                  <strong>{d.votos_positivos}</strong> votos
                 </span>
                 <br />
                 {d.estado !== "activo" && (
