@@ -10,6 +10,31 @@ import { vectorizePostit } from "../pipeline/index.js";
 import { getVotacion, setVotacion } from "../lib/votacion.js";
 
 export const adminRouter = Router();
+
+// Para el backup: centra el diablo dentro del cuadrado (su bounding box no está
+// centrada) y deja el tamaño físico del post-it (7,5×7,5 cm). Así el SVG abierto
+// suelto se ve cuadrado, centrado y al tamaño real. No toca el viewBox (0 0 74 74).
+function centrarSvg(svg) {
+  const VB = 74; // lado del viewBox
+  const m = svg.match(/scale\(([0-9.]+)\)/);
+  const s = m ? parseFloat(m[1]) : 1;
+  const ds = [...svg.matchAll(/ d="([^"]+)"/g)].map((x) => x[1]).join(" ");
+  const nums = (ds.match(/-?\d+\.?\d*/g) || []).map(Number);
+  let minx = Infinity, maxx = -Infinity, miny = Infinity, maxy = -Infinity;
+  for (let i = 0; i + 1 < nums.length; i += 2) {
+    const x = nums[i], y = nums[i + 1];
+    if (x < minx) minx = x;
+    if (x > maxx) maxx = x;
+    if (y < miny) miny = y;
+    if (y > maxy) maxy = y;
+  }
+  if (!Number.isFinite(minx)) return svg; // sin paths: dejar igual
+  const tx = (VB / 2 - ((minx + maxx) / 2) * s).toFixed(3);
+  const ty = (VB / 2 - ((miny + maxy) / 2) * s).toFixed(3);
+  return svg
+    .replace(/transform="scale\(([0-9.]+)\)"/, `transform="translate(${tx} ${ty}) scale($1)"`)
+    .replace(/width="[^"]+" height="[^"]+"/, 'width="75mm" height="75mm"');
+}
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 15 * 1024 * 1024 } });
 
 adminRouter.use(requireAuth); // todo el modo Dev requiere login
@@ -203,14 +228,8 @@ adminRouter.get("/export", async (_req, res) => {
       const { data } = await supabase.storage.from(BUCKET).download(path);
       if (!data) continue;
       let buf = Buffer.from(await data.arrayBuffer());
-      // El SVG se guarda a 74mm (~210px): abierto suelto se ve pequeño en una
-      // esquina. Para el backup le ponemos un tamaño grande en px (sin tocar el
-      // viewBox) para que se abra grande y centrado en cualquier visor.
-      if (path.endsWith(".svg")) {
-        buf = Buffer.from(
-          buf.toString("utf8").replace(/width="\d+mm" height="\d+mm"/, 'width="1000" height="1000"')
-        );
-      }
+      // Centra el diablo en el cuadrado y deja tamaño físico 7,5×7,5 cm.
+      if (path.endsWith(".svg")) buf = Buffer.from(centrarSvg(buf.toString("utf8")));
       zip.file(path, buf);
     }
   }
