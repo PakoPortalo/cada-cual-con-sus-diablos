@@ -86,10 +86,19 @@ export default function Admin() {
     recargar();
   }
 
+  // Ranking por nº de SÍ (votos), que es lo que mostramos. Desempate: menos NO
+  // primero, luego por id. (El Wilson score se ignora para el orden.)
+  const rankingPorVotos = [...ranking].sort(
+    (a, b) =>
+      b.votos_positivos - a.votos_positivos ||
+      a.votos_negativos - b.votos_negativos ||
+      a.id - b.id
+  );
+
   // puesto en el ranking (1 = más votado) solo para el top 9, y solo si ya hay
-  // votos (si no, los "puestos" serían arbitrarios con score 0).
+  // votos (si no, los "puestos" serían arbitrarios con 0 votos).
   const puestoDe = new Map(
-    (votosTotales > 0 ? ranking.slice(0, 9) : []).map((d, i) => [d.id, i + 1])
+    (votosTotales > 0 ? rankingPorVotos.slice(0, 9) : []).map((d, i) => [d.id, i + 1])
   );
 
   // rejilla de diablos ordenada por ID (por defecto) o por votos (SÍ) desc
@@ -350,7 +359,7 @@ export default function Admin() {
 
       {/* Vista previa del cuadro: top 9 en 3×3, recolocables por arrastre */}
       {verCuadro && (
-        <CuadroTop9 top9={ranking.slice(0, 9)} onClose={() => setVerCuadro(false)} />
+        <CuadroTop9 top9={rankingPorVotos.slice(0, 9)} onClose={() => setVerCuadro(false)} />
       )}
 
       {/* Galería a pantalla completa */}
