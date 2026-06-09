@@ -201,7 +201,17 @@ adminRouter.get("/export", async (_req, res) => {
     const pad = String(d.id).padStart(3, "0");
     for (const path of [`svg/${pad}.svg`, `originales/${pad}.jpg`]) {
       const { data } = await supabase.storage.from(BUCKET).download(path);
-      if (data) zip.file(path, Buffer.from(await data.arrayBuffer()));
+      if (!data) continue;
+      let buf = Buffer.from(await data.arrayBuffer());
+      // El SVG se guarda a 74mm (~210px): abierto suelto se ve pequeño en una
+      // esquina. Para el backup le ponemos un tamaño grande en px (sin tocar el
+      // viewBox) para que se abra grande y centrado en cualquier visor.
+      if (path.endsWith(".svg")) {
+        buf = Buffer.from(
+          buf.toString("utf8").replace(/width="\d+mm" height="\d+mm"/, 'width="1000" height="1000"')
+        );
+      }
+      zip.file(path, buf);
     }
   }
 
