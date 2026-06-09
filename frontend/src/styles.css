@@ -504,16 +504,19 @@ input[type="text"], input[type="number"], input[type="email"], input[type="passw
 /* grid de diablos -> post-it amarillo */
 .dev .grid .tile {
   background: #feff9c; color: var(--negro);
-  border: 2px solid var(--negro); border-radius: 0;
+  border: 2px solid var(--negro); border-radius: 4px;
 }
 .dev .grid .tile img { background: transparent; }
 .dev .grid .tile .meta { color: var(--negro); }
 .dev .grid .tile .badge { color: var(--negro); border-color: var(--negro); }
+/* botones del tile (editar / activar): contenidos en un recuadro */
 .dev .grid .tile button {
-  background: transparent; color: var(--negro); border: none;
-  padding: 0.1rem 0.3rem; font-size: 1rem; font-weight: 700; text-transform: none;
+  background: transparent; color: var(--negro);
+  border: 2px solid var(--negro); border-radius: 4px;
+  padding: 0.2rem 0.7rem; font-size: 0.82rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.04em; margin-top: 0.15rem;
 }
-.dev .grid .tile button:hover { opacity: 0.6; }
+.dev .grid .tile button:hover { background: var(--negro); color: #feff9c; }
 /* círculo de ranking (top 9), abajo-izquierda de la imagen */
 .dev .tile-img { position: relative; }
 .dev .tile .rank {
@@ -547,3 +550,53 @@ input[type="text"], input[type="number"], input[type="email"], input[type="passw
 /* Votos (solo SÍ) en los tiles del panel */
 .dev .grid .tile .tile-votos { display: inline-block; margin-top: 0.1rem; }
 .dev .grid .tile .tile-votos strong { font-size: 1.05rem; }
+
+/* Control "ordenar por" (cabecera de Diablos en el panel) */
+.dev .orden-ctl {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.85;
+}
+.dev .orden-ctl button {
+  padding: 0.3rem 0.6rem; font-size: 0.72rem;
+  border-width: 2px;
+}
+.dev .orden-ctl button.activo { background: var(--rojo); border-color: var(--rojo); color: #fff; }
+
+/* Botón de confirmación de borrado (modal editar) */
+.dev .modal .btn-peligro { background: var(--rojo); color: #fff; border-color: var(--rojo); }
+
+/* Cabecera de Diablos: responsive (ordenar en una línea, botones en otra en móvil) */
+.diablos-head {
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 0.6rem; margin-bottom: 1.1rem;
+}
+.diablos-acciones { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; }
+.diablos-botones { display: flex; gap: 0.6rem; }
+@media (max-width: 560px) {
+  .diablos-head { flex-direction: column; align-items: stretch; }
+  .diablos-acciones { flex-direction: column; align-items: stretch; width: 100%; }
+  .diablos-acciones .orden-ctl { justify-content: flex-start; }
+  .diablos-botones { width: 100%; }
+  .diablos-botones button { flex: 1; }
+}
+
+/* Hover sutil con zoom en los tiles del panel (solo con ratón) */
+@media (hover: hover) {
+  .dev .grid .tile { transition: transform 0.15s ease, box-shadow 0.15s ease; }
+  .dev .grid .tile:hover {
+    transform: scale(1.04); position: relative; z-index: 2;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+  }
+}
+
+/* Logo en el navbar del panel Dev: horizontal en escritorio, 3 líneas en móvil */
+.dev .topbar { gap: 0.8rem; }
+.dev .topbar nav { display: flex; gap: 1rem; flex-wrap: wrap; }
+.dev .dev-logo-h { height: 30px; width: auto; display: block; flex: 0 0 auto; }
+.dev .dev-logo-v { display: none; }
+@media (max-width: 560px) {
+  .dev .dev-logo-h { display: none; }
+  .dev .dev-logo-v { display: block; height: 40px; width: auto; flex: 0 0 auto; }
+  .dev .topbar nav { gap: 0.8rem; }
+  .dev .topbar nav a { margin-left: 0; }
+}

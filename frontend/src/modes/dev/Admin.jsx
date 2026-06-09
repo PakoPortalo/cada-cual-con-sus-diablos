@@ -33,6 +33,7 @@ export default function Admin() {
   const [verCuadro, setVerCuadro] = useState(false); // overlay cuadro Top 9
   const [abierta, setAbierta] = useState(null); // votación abierta/cerrada
   const [cambiandoVot, setCambiandoVot] = useState(false);
+  const [ordenDiablos, setOrdenDiablos] = useState("id"); // "id" | "votos"
 
   async function recargar() {
     try {
@@ -77,13 +78,6 @@ export default function Admin() {
     recargar();
   }
 
-  async function eliminar(id) {
-    if (!confirm(`¿Eliminar el diablo ${String(id).padStart(3, "0")}? El ID quedará libre para reasignarlo.`))
-      return;
-    await borrarDiablo(id);
-    recargar();
-  }
-
   // Guarda cambios del modal de edición: ID (reasignar) y/o nombre.
   async function guardarEdicion(diablo, { nuevoId, nombre }) {
     if (nuevoId !== diablo.id) await reasignarDiablo(diablo.id, nuevoId);
@@ -96,6 +90,11 @@ export default function Admin() {
   // votos (si no, los "puestos" serían arbitrarios con score 0).
   const puestoDe = new Map(
     (votosTotales > 0 ? ranking.slice(0, 9) : []).map((d, i) => [d.id, i + 1])
+  );
+
+  // rejilla de diablos ordenada por ID (por defecto) o por votos (SÍ) desc
+  const diablosOrdenados = [...diablos].sort((a, b) =>
+    ordenDiablos === "votos" ? b.votos_positivos - a.votos_positivos : a.id - b.id
   );
 
   // puntos para la gráfica de abandono: x = minutos, y = diablos votados
@@ -272,18 +271,35 @@ export default function Admin() {
       )}
 
       <div className="card">
-        <div className="row" style={{ justifyContent: "space-between", marginBottom: "1.1rem" }}>
+        <div className="diablos-head">
           <h3 style={{ margin: 0 }}>Diablos</h3>
-          <div className="row">
-            <button onClick={() => setVerCuadro(true)} title="Vista previa del cuadro 3×3">
-              Top 9
-            </button>
-            <button onClick={() => setVista("galeria")}>Ver galería</button>
+          <div className="diablos-acciones">
+            <span className="orden-ctl">
+              ordenar por:
+              <button
+                className={ordenDiablos === "id" ? "activo" : ""}
+                onClick={() => setOrdenDiablos("id")}
+              >
+                ID
+              </button>
+              <button
+                className={ordenDiablos === "votos" ? "activo" : ""}
+                onClick={() => setOrdenDiablos("votos")}
+              >
+                votos
+              </button>
+            </span>
+            <div className="diablos-botones">
+              <button onClick={() => setVerCuadro(true)} title="Vista previa del cuadro 3×3">
+                Top 9
+              </button>
+              <button onClick={() => setVista("galeria")}>Ver galería</button>
+            </div>
           </div>
         </div>
 
         <div className="grid">
-          {diablos.map((d) => {
+          {diablosOrdenados.map((d) => {
             const puesto = puestoDe.get(d.id); // 1 = más votado (solo top 9)
             return (
             <div className="tile" key={d.id}>
@@ -297,8 +313,13 @@ export default function Admin() {
                 <strong>{String(d.id).padStart(3, "0")}</strong>
                 {d.nombre ? ` · ${d.nombre}` : ""}
                 <br />
-                <span className={`badge ${d.estado}`}>{d.estado}</span>
-                <br />
+                {/* el estado solo se muestra si NO está activo (raro) */}
+                {d.estado !== "activo" && (
+                  <>
+                    <span className={`badge ${d.estado}`}>{d.estado}</span>
+                    <br />
+                  </>
+                )}
                 <span className="tile-votos">
                   <strong>{d.votos_positivos}</strong> votos
                 </span>
@@ -306,12 +327,7 @@ export default function Admin() {
                 {d.estado !== "activo" && (
                   <button onClick={() => cambiarEstado(d.id, "activo")}>activar</button>
                 )}{" "}
-                <button onClick={() => setEditando(d)} title="Editar">
-                  ✏️
-                </button>{" "}
-                <button onClick={() => eliminar(d.id)} title="Eliminar">
-                  🗑️
-                </button>
+                <button onClick={() => setEditando(d)}>editar</button>
               </div>
             </div>
             );
@@ -324,6 +340,11 @@ export default function Admin() {
           diablo={editando}
           onGuardar={(cambios) => guardarEdicion(editando, cambios)}
           onCancel={() => setEditando(null)}
+          onEliminar={async () => {
+            await borrarDiablo(editando.id);
+            setEditando(null);
+            recargar();
+          }}
         />
       )}
 

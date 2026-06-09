@@ -4,6 +4,8 @@ import { supabase } from "../../supabase.js";
 import Login from "./Login.jsx";
 import Capture from "./Capture.jsx";
 import Admin from "./Admin.jsx";
+import logoH from "../../assets/logo-dev.png"; // horizontal (escritorio)
+import logoV from "../../assets/logo.png"; // 3 líneas (móvil)
 
 // Contenedor del modo Dev: gestiona la sesion de Supabase Auth y enruta
 // captura / panel. Si no hay sesion, muestra el login.
@@ -33,7 +35,8 @@ export default function Dev() {
   return (
     <div className="dev">
       <div className="topbar">
-        <strong className="dev-logo">👿 Cada cual con sus diablos</strong>
+        <img className="dev-logo-h" src={logoH} alt="Cada cual con sus diablos" />
+        <img className="dev-logo-v" src={logoV} alt="Cada cual con sus diablos" />
         <nav>
           <Link to="/dev">Captura</Link>
           <Link to="/dev/panel">Panel</Link>

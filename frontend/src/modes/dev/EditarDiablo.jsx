@@ -1,11 +1,26 @@
 import { useState } from "react";
 
 // Modal para editar atributos de un diablo: ID (reasignar) y nombre.
-export default function EditarDiablo({ diablo, onGuardar, onCancel }) {
+// También permite eliminar el diablo (con confirmación inline).
+export default function EditarDiablo({ diablo, onGuardar, onCancel, onEliminar }) {
   const [id, setId] = useState(String(diablo.id));
   const [nombre, setNombre] = useState(diablo.nombre || "");
   const [error, setError] = useState("");
   const [guardando, setGuardando] = useState(false);
+  const [confirmar, setConfirmar] = useState(false); // confirmación de borrado
+  const [borrando, setBorrando] = useState(false);
+
+  async function eliminar() {
+    setBorrando(true);
+    setError("");
+    try {
+      await onEliminar();
+    } catch (e) {
+      setError(e.message);
+      setBorrando(false);
+      setConfirmar(false);
+    }
+  }
 
   async function guardar() {
     const nuevoId = Number(id);
@@ -57,14 +72,32 @@ export default function EditarDiablo({ diablo, onGuardar, onCancel }) {
           </label>
         </p>
         {error && <p className="err">{error}</p>}
-        <div className="row">
-          <button onClick={onCancel} disabled={guardando}>
-            Cancelar
-          </button>
-          <button className="btn-primary" onClick={guardar} disabled={guardando}>
-            {guardando ? "Guardando…" : "Guardar"}
-          </button>
-        </div>
+
+        {confirmar ? (
+          <div className="row" style={{ justifyContent: "center" }}>
+            <span>¿Eliminar este diablo?</span>
+            <button className="btn-peligro" onClick={eliminar} disabled={borrando}>
+              {borrando ? "Eliminando…" : "Sí"}
+            </button>
+            <button onClick={() => setConfirmar(false)} disabled={borrando}>
+              No
+            </button>
+          </div>
+        ) : (
+          <div className="row" style={{ justifyContent: "space-between" }}>
+            <button onClick={() => setConfirmar(true)} disabled={guardando}>
+              Eliminar
+            </button>
+            <div className="row">
+              <button onClick={onCancel} disabled={guardando}>
+                Cancelar
+              </button>
+              <button className="btn-primary" onClick={guardar} disabled={guardando}>
+                {guardando ? "Guardando…" : "Guardar"}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
